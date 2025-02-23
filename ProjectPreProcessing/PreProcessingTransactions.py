@@ -62,7 +62,7 @@ class PreprocessingTransactions:
 
     def savePreProcessedDataset(self, output_path):
         """
-            Saves the preprocessed dataset to a new CSV file.
+        Saves the preprocessed dataset to a new CSV file.
         """
         self.data.to_csv(output_path, index=False)
         print(f"Preprocessed dataset successfully saved to: {output_path}")
@@ -75,16 +75,16 @@ class PreprocessingTransactions:
         - Number of missing values per column
         - Basic statistical summary for numerical columns
         """
-        print("\n🔹 Dataset Summary:")
+        print("\n Dataset Summary:")
         print(f"Total Rows: {self.data.shape[0]}, Total Columns: {self.data.shape[1]}")
 
-        print("\n🔹 Column Information:")
+        print("\n Column Information:")
         print(self.data.dtypes)
 
-        print("\n🔹 Missing Values Per Column:")
+        print("\n Missing Values Per Column:")
         print(self.data.isnull().sum())
 
-        print("\n🔹 Statistical Summary for Numerical Columns:")
+        print("\n Statistical Summary for Numerical Columns:")
         print(self.data.describe())
 
     def runPipeline(self):
@@ -98,7 +98,7 @@ class PreprocessingTransactions:
 
         self.separateDateTime()
 
-        self.savePreProcessedDataset("./data/preprocessed_transactions_data.csv")
+        self.savePreProcessedDataset("../data/preprocessed_transactions_data.csv")
 
         self.printSummaryOfPreProcessedDataset()
 

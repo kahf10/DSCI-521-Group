@@ -14,6 +14,6 @@ class MasterControl:
         self.preprocessor.runPipeline()
 
 if __name__ == "__main__":
-    file_path = "./data/transactions_data.csv"
+    file_path = "../data/transactions_data.csv"
     master = MasterControl(file_path)
     master.runPreprocessing()
