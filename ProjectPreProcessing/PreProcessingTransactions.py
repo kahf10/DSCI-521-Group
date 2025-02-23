@@ -92,7 +92,7 @@ class PreprocessingTransactions:
 
         self.removeDuplicates()
 
-        self.dropColumns(['merchant_city', 'merchant_state'])
+        self.dropColumns(['merchant_city', 'merchant_state', 'errors'])
 
         self.removeRowsWithErrors()
 
