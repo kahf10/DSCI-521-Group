@@ -6,7 +6,6 @@ class MasterControl:
         Initializes the MasterControl class and sets up preprocessing.
         """
         self.preprocessor = PreprocessingTransactions(file_path)
-        self.preprocessor.readFile()  # Load dataset once and store the original
 
     def runPreprocessing(self):
         """
