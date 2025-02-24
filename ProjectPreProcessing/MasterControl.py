@@ -7,11 +7,11 @@ class MasterControl:
         """
         Runs the preprocessing steps for transactions, users, and cards datasets.
         """
-        #self.transactionsPreprocessor = PreprocessingTransactions(transactionsFilePath)
-        #self.transactionsPreprocessor.runPipeline()
+        self.transactionsPreprocessor = PreprocessingTransactions(transactionsFilePath)
+        self.transactionsPreprocessor.runPipeline()
 
-        self.usersPreprocessor = PreProcessingUsers(usersFilePath)
-        self.usersPreprocessor.runPipeline()
+        #self.usersPreprocessor = PreProcessingUsers(usersFilePath)
+        #self.usersPreprocessor.runPipeline()
 
 if __name__ == "__main__":
     transactionsFilePath = "../data/transactions_data.csv"

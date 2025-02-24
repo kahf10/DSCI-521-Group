@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 
 
 class PreprocessingTransactions:
@@ -55,10 +56,21 @@ class PreprocessingTransactions:
         """
         Splits the 'date' column into separate 'transaction_date' and 'transaction_time' columns.
         """
-        self.data['date'] = pd.to_datetime(self.data['date'])  # Ensure correct datetime format
-        self.data['transaction_date'] = self.data['date'].dt.date  # Extract date
-        self.data['transaction_time'] = self.data['date'].dt.time  # Extract time
-        print("Successfully separated 'date' into 'transaction_date' and 'transaction_time'.")
+        # Ensure 'date' is treated as a string
+        self.data['date'] = self.data['date'].astype(str)
+
+        # Regex pattern to extract date and time separately
+        date_pattern = r"^(\d{4}-\d{2}-\d{2})"
+        time_pattern = r"(\d{2}:\d{2}:\d{2})$"
+
+        self.data['transaction_date'] = self.data['date'].apply(
+            lambda x: re.search(date_pattern, x).group(1) if re.search(date_pattern, x) else None)
+        self.data['transaction_time'] = self.data['date'].apply(
+            lambda x: re.search(time_pattern, x).group(1) if re.search(time_pattern, x) else None)
+
+    def cleanAmountColumn(self):
+        self.data['amount'] = self.data['amount'].astype(str).apply(lambda x: re.sub(r'[^0-9.-]', '', x)).astype(float)
+        print("Removed '$' from amount column.")
 
     def savePreProcessedDataset(self, output_path):
         """
@@ -99,6 +111,10 @@ class PreprocessingTransactions:
         self.dropColumns(['errors'])
 
         self.separateDateTime()
+
+        self.dropColumns(['date'])
+
+        self.cleanAmountColumn()
 
         self.savePreProcessedDataset("../data/preprocessed_transactions_data.csv")
 
