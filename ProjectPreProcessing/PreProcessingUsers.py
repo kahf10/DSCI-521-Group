@@ -1,8 +1,7 @@
 import pandas as pd
-import re
+from geopy.geocoders import Nominatim
 
-
-class PreprocessingTransactions:
+class PreProcessingUsers:
     def __init__(self, file_path):
         """
         Initializes the Preprocessing class and reads the CSV file.
@@ -42,35 +41,22 @@ class PreprocessingTransactions:
 
         print(f"Dropped columns: {existing_columns}" if existing_columns else "No matching columns found to drop.")
 
-    def removeRowsWithErrors(self):
-        """
-        Removes rows where the 'errors' column has any value (not null).
-        """
-        before = len(self.data)
-        self.data = self.data[self.data['errors'].isna()]
-        after = len(self.data)
+    def calculateZipCode(self):
 
-        print(f"Removed {before - after} rows with values in the 'errors' column.")
+        geolocator = Nominatim(user_agent="geoapiExercises")  # Use geopy for reverse geocoding
 
-    def separateDateTime(self):
-        """
-        Splits the 'date' column into separate 'transaction_date' and 'transaction_time' columns.
-        """
-        # Ensure 'date' is treated as a string
-        self.data['date'] = self.data['date'].astype(str)
+        def get_zipcode(lat, lon):
+            try:
+                location = geolocator.reverse((lat, lon), exactly_one=True, timeout=10)
+                if location and 'postcode' in location.raw['address']:
+                    return location.raw['address']['postcode']
+                return None
+            except Exception:
+                return None
 
-        # Regex pattern to extract date and time separately
-        date_pattern = r"^(\d{4}-\d{2}-\d{2})"
-        time_pattern = r"(\d{2}:\d{2}:\d{2})$"
-
-        self.data['transaction_date'] = self.data['date'].apply(
-            lambda x: re.search(date_pattern, x).group(1) if re.search(date_pattern, x) else None)
-        self.data['transaction_time'] = self.data['date'].apply(
-            lambda x: re.search(time_pattern, x).group(1) if re.search(time_pattern, x) else None)
-
-    def cleanAmountColumn(self):
-        self.data['amount'] = self.data['amount'].astype(str).apply(lambda x: re.sub(r'[^0-9.-]', '', x)).astype(float)
-        print("Removed '$' from amount column.")
+        print("Converting latitude & longitude to ZIP codes...")
+        self.data['zipcode'] = self.data.apply(lambda row: get_zipcode(row['latitude'], row['longitude']), axis=1)
+        print("ZIP codes assigned, and lat/lon columns dropped.")
 
     def savePreProcessedDataset(self, output_path):
         """
@@ -99,27 +85,21 @@ class PreprocessingTransactions:
         print("\n Statistical Summary for Numerical Columns:")
         print(self.data.describe())
 
+
     def runPipeline(self):
         self.readFile()
 
         self.removeDuplicates()
 
-        self.dropColumns(['merchant_city', 'merchant_state'])
+        self.dropColumns(['birth_year', 'address', 'birth_month'])
 
-        self.removeRowsWithErrors()
+       # self.calculateZipCode()
 
-        self.dropColumns(['errors'])
+        self.dropColumns(['latitude', 'longitude'])
 
-        self.separateDateTime()
-
-        self.dropColumns(['date'])
-
-        self.cleanAmountColumn()
-
-        self.savePreProcessedDataset("../data/preprocessed_transactions_data.csv")
+        self.savePreProcessedDataset("../data/preprocessed_users_data.csv")
 
         self.printSummaryOfPreProcessedDataset()
-
 
 
 
