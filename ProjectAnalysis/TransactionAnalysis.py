@@ -15,7 +15,7 @@ class TransactionAnalysis:
     def read_file(self):
         """
         Loads the transactions CSV into a DataFrame and preprocesses key columns.
-        - Cleans up the 'amount' column (removes '$' and converts to float).
+        - Cleans up the 'amount' column (removes '$' if present and converts to float).
         """
         try:
             self.data = pd.read_csv(self.file_path)
@@ -148,6 +148,10 @@ class TransactionAnalysis:
         """
         # Chip analysis using 'use_chip'
         if 'use_chip' in self.data.columns:
+
+            self.data['use_chip'] = self.data['use_chip'].replace({
+                "Chip Transaction": "Swipe Transaction"
+            })
             chip_summary = self.data['use_chip'].value_counts(dropna=False)
             print("\nChip Transaction Types:")
             print(chip_summary)
@@ -160,21 +164,7 @@ class TransactionAnalysis:
         else:
             print("Column 'use_chip' not found; skipping chip analysis.")
 
-        # Online vs In-Person analysis (if 'transaction_mode' exists)
-        if 'transaction_mode' in self.data.columns:
-            mode_summary = self.data['transaction_mode'].value_counts(dropna=False)
-            print("\nOnline vs In-Person Transaction Counts:")
-            print(mode_summary)
-            plt.figure(figsize=(6,4))
-            sns.countplot(data=self.data, x='transaction_mode', palette='Set3')
-            plt.title("Online vs In-Person Transactions")
-            plt.xlabel("Transaction Mode")
-            plt.ylabel("Count")
-            plt.show()
-        else:
-            print("Column 'transaction_mode' not found; skipping online vs in-person analysis.")
-
-        print("Method analysis completed.")
+    print("Method analysis completed.")
 
     def run_analysis(self):
         """
