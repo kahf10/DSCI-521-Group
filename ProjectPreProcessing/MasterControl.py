@@ -1,19 +1,22 @@
 from PreProcessingTransactions import PreprocessingTransactions
+from PreProcessingUsers import PreProcessingUsers
+
 
 class MasterControl:
-    def __init__(self, file_path):
+    def runPreprocessing(self, transactionsFilePath, usersFilePath, cardsFilePath):
         """
-        Initializes the MasterControl class and sets up preprocessing.
+        Runs the preprocessing steps for transactions, users, and cards datasets.
         """
-        self.preprocessor = PreprocessingTransactions(file_path)
+        self.transactionsPreprocessor = PreprocessingTransactions(transactionsFilePath)
+        self.transactionsPreprocessor.runPipeline()
 
-    def runPreprocessing(self):
-        """
-        Runs the preprocessing steps.
-        """
-        self.preprocessor.runPipeline()
+        #self.usersPreprocessor = PreProcessingUsers(usersFilePath)
+        #self.usersPreprocessor.runPipeline()
 
 if __name__ == "__main__":
-    file_path = "../data/transactions_data.csv"
-    master = MasterControl(file_path)
-    master.runPreprocessing()
+    transactionsFilePath = "../data/transactions_data.csv"
+    usersFilePath = "../data/users_data.csv"
+    cardsFilePath = "../data/cards_data.csv"
+
+    master = MasterControl()
+    master.runPreprocessing(transactionsFilePath, usersFilePath, cardsFilePath)
