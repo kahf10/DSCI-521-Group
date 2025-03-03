@@ -1,5 +1,6 @@
 import pandas as pd
 from geopy.geocoders import Nominatim
+import re
 
 class PreProcessingUsers:
     def __init__(self, file_path):
@@ -65,6 +66,11 @@ class PreProcessingUsers:
         self.data.to_csv(output_path, index=False)
         print(f"Preprocessed dataset successfully saved to: {output_path}")
 
+    def cleanColumnsWithDollarSign(self, columnsNames):
+        for columnName in columnsNames:
+            self.data[columnName] = self.data[columnName].astype(str).apply(lambda x: re.sub(r'[^0-9.-]', '', x)).astype(float)
+        print("Removed '$' from amount column.")
+
     def printSummaryOfPreProcessedDataset(self):
         """
         Prints a summary of the preprocessed dataset:
@@ -98,6 +104,8 @@ class PreProcessingUsers:
         self.dropColumns(['latitude', 'longitude'])
 
         self.savePreProcessedDataset("../data/preprocessed_users_data.csv")
+
+        self.cleanColumnsWithDollarSign(['per_capita_income', 'yearly_income', 'total_debt'])
 
         self.printSummaryOfPreProcessedDataset()
 
