@@ -1,0 +1,5 @@
+
+
+# inherit from BaselineModeling class 
+# tune hyperparameters (hyper parameter tuning is different for each algorithm?)
+# output feature importance 
