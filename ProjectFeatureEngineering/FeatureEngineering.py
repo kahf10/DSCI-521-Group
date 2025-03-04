@@ -1,6 +1,7 @@
 import pandas as pd
 
 from ProjectFeatureEngineering.MerchantBehavior import MerchantBehavior
+from ProjectFeatureEngineering.PaymentMethod import PaymentMethod
 from TransactionFrequency import TransactionFrequency
 from SpendingBehavior import SpendingBehavior
 
@@ -54,6 +55,8 @@ class FeatureEngineering:
 
         self.applyMerchantBehaviorFeatures()
 
+        self.applyPaymentMethodFeatures()
+
         pd.set_option('display.max_columns', None)  # Show all columns
         pd.set_option('display.max_colwidth', None)  # Remove column width restriction
 
@@ -83,6 +86,14 @@ class FeatureEngineering:
         print("Applying transaction frequency features")
         transaction_features = TransactionFrequency(self.feature_data, self.transactions_data)
         self.feature_data = transaction_features.generateFeatures()
+
+    def applyPaymentMethodFeatures(self):
+        """
+        Apply payment method features
+        """
+        print("Applying payment method features")
+        payment_features = PaymentMethod(self.feature_data, self.transactions_data)
+        self.feature_data = payment_features.generateFeatures()
 
 
 
