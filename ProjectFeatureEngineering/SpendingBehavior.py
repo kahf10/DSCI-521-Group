@@ -29,7 +29,9 @@ class SpendingBehavior(BaseFeatureEngineering):
         """
         total_spending = self.transactions_data.groupby('client_id')['amount'].sum().reset_index()
         total_spending.columns = ['client_id', 'total_spending']
+
         self.feature_data = self.feature_data.merge(total_spending, on='client_id', how='left')
+        self.feature_data['total_spending'] = self.feature_data['total_spending'].fillna(0)
 
     def calculateTotalRefunds(self):
         """

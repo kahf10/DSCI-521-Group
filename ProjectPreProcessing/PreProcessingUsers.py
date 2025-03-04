@@ -103,9 +103,9 @@ class PreProcessingUsers:
 
         self.dropColumns(['latitude', 'longitude'])
 
-        self.savePreProcessedDataset("../data/preprocessed_users_data.csv")
-
         self.cleanColumnsWithDollarSign(['per_capita_income', 'yearly_income', 'total_debt'])
+
+        self.savePreProcessedDataset("../data/preprocessed_users_data.csv")
 
         self.printSummaryOfPreProcessedDataset()
 

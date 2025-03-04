@@ -1,4 +1,7 @@
 import pandas as pd
+
+from ProjectFeatureEngineering.MerchantBehavior import MerchantBehavior
+from ProjectFeatureEngineering.PaymentMethod import PaymentMethod
 from TransactionFrequency import TransactionFrequency
 from SpendingBehavior import SpendingBehavior
 
@@ -46,22 +49,51 @@ class FeatureEngineering:
         self.readFiles()
         self.initializeFeatureDataSet()
 
-        # Apply transaction frequency features
-        print("Applying transaction frequency features")
-        transaction_features = TransactionFrequency(self.feature_data, self.transactions_data)
-        self.feature_data = transaction_features.generateFeatures()
+        self.applyTransactionFeatures()
 
-        # Apply spending behavior features
-        print("Applying spending behavior features")
-        spending_features = SpendingBehavior(self.feature_data, self.transactions_data)
-        self.feature_data = spending_features.generateFeatures()
+        self.applySpendingBehaviorFeatures()
 
+        self.applyMerchantBehaviorFeatures()
+
+        self.applyPaymentMethodFeatures()
 
         pd.set_option('display.max_columns', None)  # Show all columns
         pd.set_option('display.max_colwidth', None)  # Remove column width restriction
 
         print("Feature Engineering Pipeline execution completed.")
         print(self.feature_data.head())
+
+    def applyMerchantBehaviorFeatures(self):
+        """
+        Apply merchant behavior features
+        """
+        print("Applying merchant behavior features")
+        merchant_features = MerchantBehavior(self.feature_data, self.transactions_data)
+        self.feature_data = merchant_features.generateFeatures()
+
+    def applySpendingBehaviorFeatures(self):
+        """
+        Apply spending behavior features
+        """
+        print("Applying spending behavior features")
+        spending_features = SpendingBehavior(self.feature_data, self.transactions_data)
+        self.feature_data = spending_features.generateFeatures()
+
+    def applyTransactionFeatures(self):
+        """
+        Apply transaction frequency features
+        """
+        print("Applying transaction frequency features")
+        transaction_features = TransactionFrequency(self.feature_data, self.transactions_data)
+        self.feature_data = transaction_features.generateFeatures()
+
+    def applyPaymentMethodFeatures(self):
+        """
+        Apply payment method features
+        """
+        print("Applying payment method features")
+        payment_features = PaymentMethod(self.feature_data, self.transactions_data)
+        self.feature_data = payment_features.generateFeatures()
 
 
 

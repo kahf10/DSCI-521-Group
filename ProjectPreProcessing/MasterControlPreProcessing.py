@@ -14,9 +14,9 @@ class MasterControl:
         self.usersPreprocessor = PreProcessingUsers(usersFilePath)
         self.usersPreprocessor.runPipeline()
 
-        self.cardsPreprocessor = PreProcessingCards(cardsFilePath)
+        #self.cardsPreprocessor = PreProcessingCards(cardsFilePath)
         # Optionally pass a list of columns to drop if required:
-        self.cardsPreprocessor.runPipeline()
+        #self.cardsPreprocessor.runPipeline()
 
 if __name__ == "__main__":
     transactionsFilePath = "../data/transactions_data.csv"
