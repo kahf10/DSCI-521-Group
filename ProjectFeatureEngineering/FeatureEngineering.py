@@ -1,4 +1,6 @@
 import pandas as pd
+
+from ProjectFeatureEngineering.MerchantBehavior import MerchantBehavior
 from TransactionFrequency import TransactionFrequency
 from SpendingBehavior import SpendingBehavior
 
@@ -46,22 +48,41 @@ class FeatureEngineering:
         self.readFiles()
         self.initializeFeatureDataSet()
 
-        # Apply transaction frequency features
-        print("Applying transaction frequency features")
-        transaction_features = TransactionFrequency(self.feature_data, self.transactions_data)
-        self.feature_data = transaction_features.generateFeatures()
+        self.applyTransactionFeatures()
 
-        # Apply spending behavior features
-        print("Applying spending behavior features")
-        spending_features = SpendingBehavior(self.feature_data, self.transactions_data)
-        self.feature_data = spending_features.generateFeatures()
+        self.applySpendingBehaviorFeatures()
 
+        self.applyMerchantBehaviorFeatures()
 
         pd.set_option('display.max_columns', None)  # Show all columns
         pd.set_option('display.max_colwidth', None)  # Remove column width restriction
 
         print("Feature Engineering Pipeline execution completed.")
         print(self.feature_data.head())
+
+    def applyMerchantBehaviorFeatures(self):
+        """
+        Apply merchant behavior features
+        """
+        print("Applying merchant behavior features")
+        merchant_features = MerchantBehavior(self.feature_data, self.transactions_data)
+        self.feature_data = merchant_features.generateFeatures()
+
+    def applySpendingBehaviorFeatures(self):
+        """
+        Apply spending behavior features
+        """
+        print("Applying spending behavior features")
+        spending_features = SpendingBehavior(self.feature_data, self.transactions_data)
+        self.feature_data = spending_features.generateFeatures()
+
+    def applyTransactionFeatures(self):
+        """
+        Apply transaction frequency features
+        """
+        print("Applying transaction frequency features")
+        transaction_features = TransactionFrequency(self.feature_data, self.transactions_data)
+        self.feature_data = transaction_features.generateFeatures()
 
 
 
