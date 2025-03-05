@@ -1,2 +1,110 @@
 # inherit from baseline modeling 
 # output feature importance 
+
+
+from BaseModeling import BaseModeling
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
+import numpy as np
+import pandas as pd
+
+class LogisticRegressionModel(BaseModeling):
+    def __init__(self, feature_data_path, target_column='churn_label'):
+        super().__init__(feature_data_path, target_column)
+        
+    def train(self, C=1.0, max_iter=1000, random_state=42):
+        """Train a Logistic Regression model"""
+        if self.X_train is None:
+            raise ValueError("Data not split yet. Call split_data() first.")
+            
+        if self.preprocessor is None:
+            raise ValueError("Preprocessor not created. Call create_preprocessor() first.")
+            
+        print("Training Logistic Regression model...")
+        
+        self.model = Pipeline(steps=[
+            ('preprocessor', self.preprocessor),
+            ('classifier', LogisticRegression(
+                C=C,
+                max_iter=max_iter,
+                random_state=random_state,
+                class_weight='balanced',
+                n_jobs=-1
+            ))
+        ])
+        
+        self.model.fit(self.X_train, self.y_train)
+        print("Logistic Regression model training completed")
+        
+    def hyperparameter_tuning(self, param_grid=None, cv=5):
+        """Perform grid search for hyperparameter tuning"""
+        if self.X_train is None:
+            raise ValueError("Data not split yet. Call split_data() first.")
+            
+        if self.preprocessor is None:
+            raise ValueError("Preprocessor not created. Call create_preprocessor() first.")
+            
+        if param_grid is None:
+            param_grid = {
+                'classifier__C': [0.001, 0.01, 0.1, 1, 10, 100],
+                'classifier__penalty': ['l1', 'l2', 'elasticnet'],
+                'classifier__solver': ['saga'],  # saga supports all penalties
+                'classifier__l1_ratio': [0.2, 0.5, 0.8]  # for elasticnet
+            }
+            
+        print("Performing hyperparameter tuning with grid search...")
+        
+        pipeline = Pipeline(steps=[
+            ('preprocessor', self.preprocessor),
+            ('classifier', LogisticRegression(
+                class_weight='balanced', 
+                random_state=42,
+                max_iter=2000  # Increase max_iter to ensure convergence
+            ))
+        ])
+        
+        grid_search = GridSearchCV(
+            pipeline, param_grid, cv=cv, scoring='roc_auc', n_jobs=-1, verbose=1
+        )
+        
+        grid_search.fit(self.X_train, self.y_train)
+        
+        print(f"Best parameters: {grid_search.best_params_}")
+        print(f"Best cross-validation score: {grid_search.best_score_:.4f}")
+        
+        # Update model with best estimator
+        self.model = grid_search.best_estimator_
+        print("Model updated with best parameters")
+        
+    def coefficient_analysis(self):
+        """Extract and display model coefficients"""
+        if self.model is None:
+            raise ValueError("Model not trained yet. Call train() first.")
+            
+        # Extract feature names from the preprocessor
+        feature_names = []
+        for transformer_name, transformer, columns in self.preprocessor.transformers_:
+            if transformer_name == 'cat':
+                # Get the one-hot encoded feature names
+                feature_names.extend(
+                    transformer.named_steps['onehot'].get_feature_names_out(columns)
+                )
+            else:
+                # Numerical feature names stay the same
+                feature_names.extend(columns)
+                
+        # Get coefficients from the classifier
+        coefficients = self.model.named_steps['classifier'].coef_[0]
+        
+        # Create a DataFrame for better visualization
+        coef_df = pd.DataFrame({
+            'Feature': feature_names,
+            'Coefficient': coefficients,
+            'Abs_Coefficient': np.abs(coefficients)
+        }).sort_values('Abs_Coefficient', ascending=False)
+        
+        print("Feature Coefficients:")
+        print(coef_df.head(20))  # Show top 20 features by absolute coefficient
+        
+        return coef_df
