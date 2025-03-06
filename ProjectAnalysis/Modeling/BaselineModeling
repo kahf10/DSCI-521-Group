@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, f1_score
 import joblib
 import os
 
@@ -15,7 +15,7 @@ import os
 # train model --> probably better to implment in each specific algorithm file 
 # evaluate training results 
 # save model --> use joblib files to save it 
-# use cross validation set for hyper parameter tuning using param grid --> might do this in specific algorithm file 
+# use cross validation set for hyper parameter tuning using param grid --> do this in specific algorithm file 
 # update hyperparameters
 # test model on testing data 
 # evaluate results 
@@ -24,7 +24,7 @@ import os
 
 class BaselineModeling:
 
-    def __init__(self, path_to_feature_data, target_column = 'churn'):
+    def __init__(self, path_to_feature_data, target_column = 'churn', random_state = 42):
         """Initialize the baseline modeling class. This class is meant to be have basic functionalities that other specific algorithms
         can inherit from."""
 
@@ -39,6 +39,7 @@ class BaselineModeling:
         self.numerical_columns = []
         self.model = None
         self.preprocessor = None
+        self.random_state = random_state
 
 
     def load_data(self):
@@ -48,7 +49,7 @@ class BaselineModeling:
         
   
 
-    def split_data(self, test_size=0.1, validation_size=0.1, random_state=42):
+    def split_data(self, test_size=0.1, validation_size=0.1):
         """ 
         Split data into training, validation, and testing sets and return them.
         
@@ -62,7 +63,7 @@ class BaselineModeling:
 
         # First split
         X_temp, X_test, y_temp, y_test = train_test_split(
-            X, y, test_size=test_size, random_state=random_state, stratify=y
+            X, y, test_size=test_size, random_state= self.random_state, stratify=y
         )
 
         # Second split
@@ -70,9 +71,10 @@ class BaselineModeling:
 
         X_train, X_val, y_train, y_val = train_test_split(
             X_temp, y_temp, test_size=validation_size_adjusted,
-            random_state=random_state, stratify=y_temp
+            random_state = self.random_state, stratify = y_temp
         )
 
+        # split datasets are updated within the class
         self.X_train, self.X_val, self.X_test = X_train, X_val, X_test
         self.y_train, self.y_val, self.y_test = y_train, y_val, y_test
 
@@ -81,8 +83,9 @@ class BaselineModeling:
             f"{X_val.shape[0]} validation samples ({(len(X_val) * 100 / len(X)):.2f}%), "
             f"{X_test.shape[0]} testing samples ({(len(X_test) * 100 / len(X)):.2f}%)")
 
-        # Return the split datasets
-        return X_train, X_val, X_test, y_train, y_val, y_test
+        # Update the split datasets
+        #return X_train, X_val, X_test, y_train, y_val, y_test
+
     
 
     def normalize_standard(self, numerical_columns):
@@ -100,13 +103,16 @@ class BaselineModeling:
             if column not in numeric_columns:
                 raise ValueError(f"Selected column '{column}' not numerical and can't be normalized.")
             
-        # normalize the columns
+        # initialize the standard scaler and then fit it on the training set so it learns the mean and standard deviation (of only the training set)
         scaler = StandardScaler()
-        df_normalized = pd.DataFrame(scaler.fit_transform(self.data[numerical_columns]), 
-                                columns=numerical_columns, 
-                                index=self.data.index)
+        scaler.fit(self.X_train[numerical_columns])
+        
+        # Transform all datasets
+        self.X_train[numerical_columns] = scaler.transform(self.X_train[numerical_columns])
+        self.X_test[numerical_columns] = scaler.transform(self.X_test[numerical_columns])
+        self.X_val[numerical_columns] = scaler.transform(self.X_val[numerical_columns])
 
-        return df_normalized
+        #return df_normalized
     
     def encode_categorical(self, categorical_columns):
         #TO-DO : decide on encoder and encode related columns 
@@ -134,6 +140,9 @@ class BaselineModeling:
         print(confusion_matrix(self.y_test, y_pred))
         
         print(f"\nROC AUC Score: {roc_auc_score(self.y_test, y_prob):.4f}")
+
+        print(f"\nF1 Score: {f1_score(self.y_test, y_pred):.4f}")
+        print("")
 
 
     def save_model(self, model_path):
