@@ -1,0 +1,185 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, f1_score
+import joblib
+import os
+
+# load data
+# split data set (test, train, validation, X, Y)
+# encode categorical features
+# normalize the other features (numerical) 
+# train model --> probably better to implment in each specific algorithm file 
+# evaluate training results 
+# save model --> use joblib files to save it 
+# use cross validation set for hyper parameter tuning using param grid --> do this in specific algorithm file 
+# update hyperparameters
+# test model on testing data 
+# evaluate results 
+
+
+
+class BaselineModeling:
+
+    def __init__(self, path_to_feature_data, target_column = 'churn', random_state = 42):
+        """Initialize the baseline modeling class. This class is meant to be have basic functionalities that other specific algorithms
+        can inherit from."""
+
+        self.path_to_feature_data = path_to_feature_data
+        self.target_column = target_column
+        self.data = None
+        self.X_train = None
+        self.X_test = None
+        self.y_train = None
+        self.y_test = None
+        self.categorical_columns = []
+        self.numerical_columns = []
+        self.model = None
+        self.preprocessor = None
+        self.random_state = random_state
+
+
+    def load_data(self):
+        self.data = pd.read_csv(self.path_to_feature_data)
+        print(f"Data loaded. Dimensions: {self.data.shape[0]} rows and {self.data.shape[1]} columns.")
+        return self.data
+        
+  
+
+    def split_data(self, test_size=0.1, validation_size=0.1):
+        """ 
+        Split data into training, validation, and testing sets and return them.
+        
+        This creates an 80/10/10 split (train/validation/test) by default.
+        """
+        if self.target_column not in self.data.columns:
+            raise ValueError(f"Target column '{self.target_column}' not found in dataset")
+
+        X = self.data.drop([self.target_column], axis=1)
+        y = self.data[self.target_column]
+
+        # First split
+        X_temp, X_test, y_temp, y_test = train_test_split(
+            X, y, test_size=test_size, random_state= self.random_state, stratify=y
+        )
+
+        # Second split
+        validation_size_adjusted = validation_size / (1 - test_size)
+
+        X_train, X_val, y_train, y_val = train_test_split(
+            X_temp, y_temp, test_size=validation_size_adjusted,
+            random_state = self.random_state, stratify = y_temp
+        )
+
+        # split datasets are updated within the class
+        self.X_train, self.X_val, self.X_test = X_train, X_val, X_test
+        self.y_train, self.y_val, self.y_test = y_train, y_val, y_test
+
+        # Print data distribution 
+        print(f"Data split: {X_train.shape[0]} training samples ({(len(X_train) * 100 / len(X)):.2f}%), "
+            f"{X_val.shape[0]} validation samples ({(len(X_val) * 100 / len(X)):.2f}%), "
+            f"{X_test.shape[0]} testing samples ({(len(X_test) * 100 / len(X)):.2f}%)")
+
+        # Update the split datasets
+        #return X_train, X_val, X_test, y_train, y_val, y_test
+
+    
+
+    def normalize_standard(self, numerical_columns):
+        """Normalizes z score; values have a mean of 0 and a standard deviation of 1."""
+
+        # Get the numerical column names to verify if columns can be normalized 
+        numeric_df = self.data.select_dtypes(include=['number'])
+        numeric_columns = numeric_df.columns.tolist()
+
+
+        for column in numerical_columns:
+            if column not in self.data.columns:
+                raise ValueError(f"Selected column '{column}' not found in dataset")
+            
+            if column not in numeric_columns:
+                raise ValueError(f"Selected column '{column}' not numerical and can't be normalized.")
+            
+        # initialize the standard scaler and then fit it on the training set so it learns the mean and standard deviation (of only the training set)
+        scaler = StandardScaler()
+        scaler.fit(self.X_train[numerical_columns])
+        
+        # Transform all datasets
+        self.X_train[numerical_columns] = scaler.transform(self.X_train[numerical_columns])
+        self.X_test[numerical_columns] = scaler.transform(self.X_test[numerical_columns])
+        self.X_val[numerical_columns] = scaler.transform(self.X_val[numerical_columns])
+
+        #return df_normalized
+    
+    def encode_categorical(self, categorical_columns):
+        #TO-DO : decide on encoder and encode related columns 
+
+
+        pass
+
+    def train(self):
+        """Train the model - to be implemented by child classes"""
+        raise NotImplementedError("This method should be implemented by child classes")
+    
+
+    def evaluate(self):
+        """Evaluate the model on test data"""
+        if self.model is None:
+            raise ValueError("Model not trained yet. Call train() first.")
+            
+        y_pred = self.model.predict(self.X_test)
+        y_prob = self.model.predict_proba(self.X_test)[:, 1]
+        
+        print("\nClassification Report:")
+        print(classification_report(self.y_test, y_pred))
+        
+        print("\nConfusion Matrix:")
+        print(confusion_matrix(self.y_test, y_pred))
+        
+        print(f"\nROC AUC Score: {roc_auc_score(self.y_test, y_prob):.4f}")
+
+        print(f"\nF1 Score: {f1_score(self.y_test, y_pred):.4f}")
+        print("")
+
+
+    def save_model(self, model_path):
+        """Save the model to disk"""
+        if self.model is None:
+            raise ValueError("Model not trained yet. Call train() first.")
+            
+        os.makedirs(os.path.dirname(model_path), exist_ok=True)
+        joblib.dump(self.model, model_path)
+        print(f"Model saved to {model_path}")
+
+    
+    def load_model(self, model_path):
+        """Load a trained model from disk"""
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model file not found at {model_path}")
+            
+        self.model = joblib.load(model_path)
+        print(f"Model loaded from {model_path}")
+
+
+    
+
+
+            
+        
+
+
+
+
+    
+
+
+
+
+        
+
+
+
+
