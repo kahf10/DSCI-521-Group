@@ -11,7 +11,7 @@ def main():
         user_file_path=user_file_path,
         card_file_path=card_file_path,
         transaction_file_path=transaction_file_path,
-        output_file_path="../../data/combined_data.csv"  # <--- Where the cleaned data is saved
+        output_file_path="../../data/combined_data.csv"
     )
 
     # Run the analysis
