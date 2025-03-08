@@ -6,9 +6,6 @@ users = pd.read_csv('../data/preprocessed_users_data.csv')
 pd.set_option('display.max_columns', None)  # Show all columns
 pd.set_option('display.max_colwidth', None)  # Remove column width restriction
 
-print(users.head())
-print(len(users))
-
 print(transactions.sample(10))
 print(users.sample(10))
 

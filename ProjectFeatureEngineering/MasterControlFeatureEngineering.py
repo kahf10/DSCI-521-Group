@@ -15,7 +15,7 @@ class MasterControl:
 if __name__ == "__main__":
     transactionsFilePath = "../data/preprocessed_transactions_data.csv"
     usersFilePath = "../data/preprocessed_users_data.csv"
-    cardsFilePath = "../data/cards_data.csv"
+    #cardsFilePath = "../data/cards_data.csv"
 
     master = MasterControl()
     master.runPreprocessing(transactionsFilePath, usersFilePath)
