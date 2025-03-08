@@ -1,6 +1,6 @@
 import pandas as pd
 
-from ProjectFeatureEngineering.ChurnLabel import ChurnLabeling
+from ProjectFeatureEngineering.ChurnLabeling import ChurnLabeling
 from ProjectFeatureEngineering.MerchantBehavior import MerchantBehavior
 from ProjectFeatureEngineering.PaymentMethod import PaymentMethod
 from TransactionFrequency import TransactionFrequency
@@ -49,16 +49,18 @@ class FeatureEngineering:
         """
         self.readFiles()
         self.initializeFeatureDataSet()
-        #
-        # self.applyTransactionFeatures()
-        #
-        # self.applySpendingBehaviorFeatures()
-        #
-        # self.applyMerchantBehaviorFeatures()
-        #
-        # self.applyPaymentMethodFeatures()
+
+        self.applyTransactionFeatures()
+
+        self.applySpendingBehaviorFeatures()
+
+        self.applyMerchantBehaviorFeatures()
+
+        self.applyPaymentMethodFeatures()
 
         self.applyChurnLabels()
+
+        self.createFeatureDataset()
 
         pd.set_option('display.max_columns', None)  # Show all columns
         pd.set_option('display.max_colwidth', None)  # Remove column width restriction
@@ -105,6 +107,21 @@ class FeatureEngineering:
         print("Applying churn labelling")
         churn_labeling = ChurnLabeling(self.feature_data, self.transactions_data)
         self.feature_data = churn_labeling.generateFeatures()
+
+        # Print churn summary here instead of inside ChurnLabeling
+        churn_counts = self.feature_data['churn_label'].value_counts()
+        print("\nChurn Summary:")
+        print(f" - Active Users (0): {churn_counts.get(0, 0)}")
+        print(f" - Churned Users (1): {churn_counts.get(1, 0)}")
+
+    def createFeatureDataset(self):
+        """
+        Create csv file of feature data
+        """
+        print("Saving feature data")
+        output_path = "../data/feature_data.csv"
+        self.feature_data.to_csv(output_path, index=False)
+
 
 
 

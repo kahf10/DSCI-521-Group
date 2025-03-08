@@ -1,7 +1,7 @@
 from FeatureEngineering import FeatureEngineering
 
 
-class MasterControl:
+class MasterControlFeatureEngineering:
     def __init__(self):
         self.featureEngineeringPreprocessor = None
 
@@ -17,5 +17,5 @@ if __name__ == "__main__":
     usersFilePath = "../data/preprocessed_users_data.csv"
     #cardsFilePath = "../data/cards_data.csv"
 
-    master = MasterControl()
+    master = MasterControlFeatureEngineering()
     master.runPreprocessing(transactionsFilePath, usersFilePath)

@@ -1,9 +1,8 @@
 import pandas as pd
 from __init__ import BaseFeatureEngineering
 
-CHURN_CONDITION_THRESHOLD = 1.0
-CHURN_CONDITION_TIME_THRESHOLD = 6 # In months
-
+CHURN_CONDITION_THRESHOLD = 1.0  # Adjust this if needed
+CHURN_CONDITION_TIME_THRESHOLD = 6  # In months
 
 class ChurnLabeling(BaseFeatureEngineering):
 
@@ -25,25 +24,18 @@ class ChurnLabeling(BaseFeatureEngineering):
         # Compute historical and recent average transactions
         churn_data = self.computeChurnLabels(monthly_activity)
 
-        # Save churn labels separately
-        churn_data[['client_id', 'churn_label']].to_csv('../data/churn_labels.csv', index=False)
+        self.feature_data = churn_data.copy()
 
-        # Print summary of churned vs non-churned users
-        churn_counts = churn_data['churn_label'].value_counts()
-        print("\nChurn Summary:")
-        print(f" - Active Users (0): {churn_counts.get(0, 0)}")
-        print(f" - Churned Users (1): {churn_counts.get(1, 0)}")
+        print("Churn labels successfully generated.")
 
-        print("Churn labels successfully generated and saved as churn_labels.csv.")
-
-        return churn_data
+        return self.feature_data
 
     def computeChurnLabels(self, monthly_activity):
         """
         Computes churn labels based on historical and recent transaction averages.
         """
         latest_date = self.transactions_data['transaction_date'].max()
-        churn_cutoff_date = latest_date - pd.DateOffset(months= CHURN_CONDITION_TIME_THRESHOLD)
+        churn_cutoff_date = latest_date - pd.DateOffset(months=CHURN_CONDITION_TIME_THRESHOLD)
 
         # Historical transactions (excluding last 6 months)
         historical_activity = monthly_activity[monthly_activity['transaction_month'] < churn_cutoff_date.to_period('M')]
@@ -63,7 +55,7 @@ class ChurnLabeling(BaseFeatureEngineering):
         churn_data['recent_avg_transactions'] = churn_data['recent_avg_transactions'].fillna(0)
         churn_data['historical_avg_transactions'] = churn_data['historical_avg_transactions'].fillna(1)  # Avoid division by zero
 
-        # Define churn condition: recent activity is significantly lower than historical (e.g., drops by 10%)
+        # Define churn condition: recent activity is significantly lower than historical
         churn_data['churn_label'] = (churn_data['recent_avg_transactions'] / churn_data['historical_avg_transactions'] < CHURN_CONDITION_THRESHOLD).astype(int)
 
-        return churn_data
+        return churn_data  # Return updated dataset
