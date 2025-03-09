@@ -61,7 +61,7 @@ class RandomForestModel(BaselineModeling):
                 verbose=1
             )
         
-        # training...
+        # training
         grid_search.fit(self.X_val, self.y_val)
         
         print(f"Best parameters: {grid_search.best_params_}")
@@ -72,7 +72,7 @@ class RandomForestModel(BaselineModeling):
         print("Model updated with best parameters")
 
 
-    # predict and evaluate using parent class methods 
+    # predict and evaluate using parent class methods
 
     def run_pipeline(self, numerical_columns, categorical_columns, store_model_path):
 

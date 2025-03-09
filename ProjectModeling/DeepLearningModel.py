@@ -33,20 +33,9 @@ class NeuralNetworkModel(BaselineModeling):
                       dropout_rate=0.2, learning_rate=0.001, batch_norm=True):
         """
         Create a neural network model with the specified architecture.
+
+        Parameters: hidden layers, activation (reLu usually works best), dropout rate for regularization, learning rate, batchnorm
         
-        Parameters:
-        -----------
-        hidden_layers : tuple, default=(64, 32)
-            Number of neurons in each hidden layer
-        activation : str, default='relu'
-            Activation function to use in hidden layers
-        dropout_rate : float, default=0.2
-            Dropout rate for regularization
-        learning_rate : float, default=0.001
-            Learning rate for the Adam optimizer
-        batch_norm : bool, default=True
-            Whether to use batch normalization
-            
         Returns:
         --------
         model : tf.keras.Model
@@ -60,55 +49,38 @@ class NeuralNetworkModel(BaselineModeling):
         
         # Add input layer and first hidden layer
         model.add(Dense(hidden_layers[0], input_dim=input_dim, activation=activation))
-        if batch_norm:
-            model.add(BatchNormalization())
-        if dropout_rate > 0:
-            model.add(Dropout(dropout_rate))
+        # add in the batch normalization and dropout regularization 
+        model.add(BatchNormalization())
+        model.add(Dropout(dropout_rate))
         
         # Add additional hidden layers
         for units in hidden_layers[1:]:
             model.add(Dense(units, activation=activation))
-            if batch_norm:
-                model.add(BatchNormalization())
-            if dropout_rate > 0:
-                model.add(Dropout(dropout_rate))
+            model.add(BatchNormalization())
+            model.add(Dropout(dropout_rate))
         
-        # Add output layer (sigmoid for binary classification)
+        # Add output layer (sigmoid for binary classification, churn or no churn)
         model.add(Dense(1, activation='sigmoid'))
         
         # Compile model
         model.compile(
             optimizer=Adam(learning_rate=learning_rate),
             loss='binary_crossentropy',
-            metrics=['accuracy', tf.keras.metrics.AUC(name='auc')]
+            # metric --> area under curve
+            metrics=['accuracy', tf.keras.metrics.AUC(name='auc')] 
         )
-        
         return model
 
     def train(self, hidden_layers=(64, 32), activation='relu', dropout_rate=0.2,
               learning_rate=0.001, batch_norm=True, batch_size=32, epochs=100):
         """
-        Train a neural network model with specified architecture and parameters.
-        
-        Parameters:
-        -----------
-        hidden_layers : tuple, default=(64, 32)
-            Number of neurons in each hidden layer
-        activation : str, default='relu'
-            Activation function to use in hidden layers
-        dropout_rate : float, default=0.2
-            Dropout rate for regularization
-        learning_rate : float, default=0.001
-            Learning rate for the Adam optimizer
-        batch_norm : bool, default=True
-            Whether to use batch normalization
-        batch_size : int, default=32
-            Number of samples per gradient update
-        epochs : int, default=100
-            Number of epochs to train the model
+        Train a neural network model.
+
+        Params: hidden layers, activation, dropout rate, learning rate, batch norm, batch size, epochs
         """
+
         print("Training Neural Network model...")
-        
+
         # Set random seed for reproducibility
         tf.random.set_seed(self.random_state)
         
@@ -142,7 +114,7 @@ class NeuralNetworkModel(BaselineModeling):
             )
         ]
         
-        # Create and compile the model
+        # Create model
         self.model = self._create_model(
             hidden_layers=hidden_layers,
             activation=activation,
@@ -237,15 +209,8 @@ class NeuralNetworkModel(BaselineModeling):
     def hyperparameter_tuning(self, param_distributions=None, n_iter=20, cv=3):
         """
         Perform randomized search to find optimal hyperparameters for neural network.
-        
-        Parameters:
-        -----------
-        param_distributions : dict, default=None
-            Dictionary with parameters names as keys and distributions to sample parameters from
-        n_iter : int, default=20
-            Number of parameter settings sampled
-        cv : int, default=3
-            Number of cross-validation folds
+
+        Params: param distributions, number of iterations, number of cross validation folds
         """
         print("Performing hyperparameter tuning with randomized search...")
         
@@ -259,7 +224,7 @@ class NeuralNetworkModel(BaselineModeling):
                 'learning_rate': uniform(0.0001, 0.01),
                 'batch_norm': [True, False],
                 'batch_size': [16, 32, 64, 128],
-                'epochs': [50]  # Fixed for tuning, we'll use early stopping
+                'epochs': [50]  
             }
         
         # Set random seed for reproducibility
@@ -318,16 +283,6 @@ class NeuralNetworkModel(BaselineModeling):
     def get_feature_importance(self, sample_size=100):
         """
         Calculate feature importance using SHAP values.
-        
-        Parameters:
-        -----------
-        sample_size : int, default=100
-            Number of samples to use for SHAP calculation
-            
-        Returns:
-        --------
-        importance_df : pandas.DataFrame
-            DataFrame with feature importance values
         """
         if self.model is None:
             raise ValueError("Model not trained yet. Call train() first.")
@@ -419,14 +374,7 @@ class NeuralNetworkModel(BaselineModeling):
         plt.show()
 
     def save_model(self, model_path):
-        """
-        Save the neural network model to disk using TensorFlow's SavedModel format.
-        
-        Parameters:
-        -----------
-        model_path : str
-            Path where the model should be saved
-        """
+  
         if self.model is None:
             raise ValueError("Model not trained yet. Call train() first.")
             
@@ -439,14 +387,7 @@ class NeuralNetworkModel(BaselineModeling):
         print(f"Neural Network model saved to {model_path}")
 
     def load_model(self, model_path):
-        """
-        Load a trained neural network model from disk.
-        
-        Parameters:
-        -----------
-        model_path : str
-            Path from which to load the model
-        """
+
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model directory not found at {model_path}")
             
@@ -456,15 +397,6 @@ class NeuralNetworkModel(BaselineModeling):
     def run_pipeline(self, numerical_columns, categorical_columns, store_model_path):
         """
         Run the complete modeling pipeline from data loading to model evaluation and saving.
-        
-        Parameters:
-        -----------
-        numerical_columns : list
-            List of numerical column names to normalize
-        categorical_columns : list
-            List of categorical column names to encode
-        store_model_path : str
-            Path where the trained model should be saved
         """
         # Execute the pipeline steps
         self.load_data()
