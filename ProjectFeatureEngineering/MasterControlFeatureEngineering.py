@@ -3,19 +3,18 @@ from FeatureEngineering import FeatureEngineering
 
 class MasterControlFeatureEngineering:
     def __init__(self):
-        self.featureEngineeringPreprocessor = None
+        self.featureEngineering = None
 
-    def runPreprocessing(self, transactionsFilePath, usersFilePath):
+    def runPFeatureEngineering(self, transactionsFilePath, usersFilePath):
         """
         Runs the preprocessing steps for transactions, users, and cards datasets.
         """
-        self.featureEngineeringPreprocessor = FeatureEngineering(transactionsFilePath, usersFilePath)
-        self.featureEngineeringPreprocessor.runPipeline()
+        self.featureEngineering = FeatureEngineering(transactionsFilePath, usersFilePath)
+        self.featureEngineering.runPipeline()
 
 if __name__ == "__main__":
     transactionsFilePath = "../data/preprocessed_transactions_data.csv"
     usersFilePath = "../data/preprocessed_users_data.csv"
-    #cardsFilePath = "../data/cards_data.csv"
 
     master = MasterControlFeatureEngineering()
-    master.runPreprocessing(transactionsFilePath, usersFilePath)
+    master.runPFeatureEngineering(transactionsFilePath, usersFilePath)

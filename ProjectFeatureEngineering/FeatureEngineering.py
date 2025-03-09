@@ -1,6 +1,7 @@
 import pandas as pd
 
 from ProjectFeatureEngineering.ChurnLabeling import ChurnLabeling
+from ProjectFeatureEngineering.FeatureEngineeringProcessing import FeatureEngineeringProcessing
 from ProjectFeatureEngineering.MerchantBehavior import MerchantBehavior
 from ProjectFeatureEngineering.PaymentMethod import PaymentMethod
 from TransactionFrequency import TransactionFrequency
@@ -13,7 +14,7 @@ class FeatureEngineering:
         self.transactions_file = transactions_file
         self.users_data = None
         self.transactions_data = None
-        self.feature_data = None  # Placeholder for our final dataset
+        self.feature_data = None  # Placeholder for our feature dataset
 
     def readFiles(self):
         """
@@ -47,19 +48,28 @@ class FeatureEngineering:
         """
         Runs the feature engineering pipeline.
         """
+        print("-" * 100)
         self.readFiles()
+
+        print("-" * 100)
         self.initializeFeatureDataSet()
 
+        print("-" * 100)
         self.applyTransactionFeatures()
 
+        print("-" * 100)
         self.applySpendingBehaviorFeatures()
 
+        print("-" * 100)
         self.applyMerchantBehaviorFeatures()
 
+        print("-" * 100)
         self.applyPaymentMethodFeatures()
 
+        print("-" * 100)
         self.applyChurnLabels()
 
+        print("-" * 100)
         self.createFeatureDataset()
 
         pd.set_option('display.max_columns', None)  # Show all columns
@@ -67,6 +77,13 @@ class FeatureEngineering:
 
         print("Feature Engineering Pipeline execution completed.")
         print(self.feature_data.head())
+
+        print("-" * 100)
+        self.applyFeatureProcessing()
+
+        print("Processing features completed.")
+        print(pd.read_csv('../data/train_Data.csv').head())
+        print("-" * 100)
 
     def applyMerchantBehaviorFeatures(self):
         """
@@ -122,6 +139,13 @@ class FeatureEngineering:
         output_path = "../data/feature_data.csv"
         self.feature_data.to_csv(output_path, index=False)
 
-
+    def applyFeatureProcessing(self):
+        """
+        Apply feature processing
+        """
+        print("Applying feature processing")
+        feature_data = pd.read_csv("../data/feature_data.csv")
+        feature_processor = FeatureEngineeringProcessing(feature_data)
+        feature_processor.runPipeline()
 
 

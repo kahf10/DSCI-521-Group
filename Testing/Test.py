@@ -12,4 +12,5 @@ pd.set_option('display.max_colwidth', None)  # Remove column width restriction
 # print(transactions['use_chip'].unique())
 
 featureData = pd.read_csv('../data/feature_data.csv')
+print(featureData.head())
 
