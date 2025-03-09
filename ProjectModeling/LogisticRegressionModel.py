@@ -125,3 +125,4 @@ class LogisticRegressionModel:
         """Saves the trained model to disk."""
         joblib.dump(self.model, model_path)
         print(f"Model saved at: {model_path}\n")
+       
