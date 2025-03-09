@@ -3,6 +3,7 @@ import pandas as pd
 from LogisticRegressionModel import LogisticRegressionModel
 from ProjectModeling.DeepLearningModel import DeepLearningModel
 from ProjectModeling.SVMModel import SVMModel
+from ProjectModeling.SimpleLogisticRegression import SimpleLogisticRegression
 
 
 class Modeling:
@@ -28,8 +29,11 @@ class Modeling:
         # print("-" * 100)
         # self.applySVMModeling()
 
+        # print("-" * 100)
+        # self.applyDeepLearning()
+
         print("-" * 100)
-        self.applyDeepLearning()
+        self.applySimpleLogisticRegression()
 
         print("-" * 100)
         print("Modeling pipeline execution completed.")
@@ -52,23 +56,28 @@ class Modeling:
 
     def initializeModelingDataset(self):
         """
-        Prepares the dataset for modeling by handling missing values and splitting features/target.
+        Prepares the dataset for modeling by handling missing values and ensuring correct data types.
         """
         if self.train_data is not None and self.test_data is not None:
-            # Handle missing values in training & test sets
-            self.train_data.fillna(self.train_data.median(numeric_only=True), inplace=True)
-            self.train_data.fillna(self.train_data.mode().iloc[0], inplace=True)
+            # Step 1: Handle Missing Values (Fill numeric with median, categorical with mode)
+            for column in self.train_data.columns:
+                if self.train_data[column].isnull().sum() > 0:
+                    if self.train_data[column].dtype == 'O':  # Categorical
+                        mode_value = self.train_data[column].mode()[0]
+                        self.train_data.loc[:, column] = self.train_data[column].fillna(mode_value)
+                        self.test_data.loc[:, column] = self.test_data[column].fillna(mode_value)
+                    else:  # Numeric
+                        median_value = self.train_data[column].median()
+                        self.train_data.loc[:, column] = self.train_data[column].fillna(median_value)
+                        self.test_data.loc[:, column] = self.test_data[column].fillna(median_value)
 
-            self.test_data.fillna(self.test_data.median(numeric_only=True), inplace=True)
-            self.test_data.fillna(self.test_data.mode().iloc[0], inplace=True)
-
-            # Splitting features and target
+            # Step 2: Splitting Features and Target
             self.X_train = self.train_data.drop(columns=['churn_label'])
             self.y_train = self.train_data['churn_label']
             self.X_test = self.test_data.drop(columns=['churn_label'])
             self.y_test = self.test_data['churn_label']
 
-            print("Modeling dataset initialized with missing values handled.")
+            print("Dataset initialized with missing values handled.")
         else:
             print("Error: Data not loaded. Run readFiles() first.")
 
@@ -77,7 +86,7 @@ class Modeling:
         Train and evaluate Logistic Regression model.
         """
         print("Training Logistic Regression model")
-        logistic_model = LogisticRegressionModel(self.X_train, self.y_train, self.X_test, self.y_test)
+        logistic_model = SimpleLogisticRegression(self.X_train, self.y_train, self.X_test, self.y_test)
         logistic_model.runPipeline()
 
     def applySVMModeling(self):
@@ -95,4 +104,12 @@ class Modeling:
         print("Training Deep Learning model")
         dl_model = DeepLearningModel(self.X_train, self.y_train, self.X_test, self.y_test)
         dl_model.run_pipeline()
+
+    def applySimpleLogisticRegression(self):
+        """
+        Train and evaluate Logistic Regression model
+        """
+        print("Training simple Logistic Regression model")
+        logistic_model = SimpleLogisticRegression(self.X_train, self.y_train, self.X_test, self.y_test)
+        logistic_model.runPipeline()
 
