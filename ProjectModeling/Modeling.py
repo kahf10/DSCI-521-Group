@@ -1,5 +1,9 @@
 import pandas as pd
+from sklearn.svm import SVC
+
 from LogisticRegressionModel import LogisticRegressionModel
+from ProjectModeling.SVMModel import SVMModel
+
 
 class Modeling:
     def __init__(self, train_file, test_file):
@@ -18,8 +22,11 @@ class Modeling:
         print("-" * 100)
         self.initializeModelingDataset()
 
+        # print("-" * 100)
+        # self.applyLogisticRegression()
+
         print("-" * 100)
-        self.applyLogisticRegression()
+        self.applySVMModeling()
 
         print("-" * 100)
         print("Modeling pipeline execution completed.")
@@ -69,4 +76,12 @@ class Modeling:
         print("Training Logistic Regression model")
         logistic_model = LogisticRegressionModel(self.X_train, self.y_train, self.X_test, self.y_test)
         logistic_model.runPipeline()
+
+    def applySVMModeling(self):
+        """
+        Train and evaluate SVM model
+        """
+        print("Training SVM model")
+        svm_model = SVMModel(self.X_train, self.y_train, self.X_test, self.y_test)
+        svm_model.runPipeline()
 
